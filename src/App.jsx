@@ -249,28 +249,39 @@ export default function App() {
   const startRecording = () => {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { toast("Hlasový vstup není podporován — napište zprávu.", "err"); return; }
-    const r = new SR();
-    r.continuous = true; r.interimResults = true; r.lang = "cs-CZ";
-    r.onresult = (e) => {
-      let final = ""; let interim = "";
-      for (let i = 0; i < e.results.length; i++) {
-        if (e.results[i].isFinal) { final += e.results[i][0].transcript + " "; }
-        else { interim += e.results[i][0].transcript; }
-      }
-      if (final) setRawInput(prev => (prev + " " + final).trim());
-      setLiveText(interim);
-    };
-    r.onerror = () => { setIsRecording(false); clearInterval(timerRef.current); toast("Chyba mikrofonu.", "err"); };
-    r.start();
-    recognitionRef.current = r;
     setIsRecording(true); setLiveText(""); setRecordingTime(0);
     timerRef.current = setInterval(()=>setRecordingTime(t=>t+1), 1000);
+    const startSR = () => {
+      if (!recognitionRef.current) return;
+      const r = new SR();
+      r.continuous = false; r.interimResults = true; r.lang = "cs-CZ";
+      r.onresult = (e) => {
+        let final = ""; let interim = "";
+        for (let i = 0; i < e.results.length; i++) {
+          if (e.results[i].isFinal) { final += e.results[i][0].transcript + " "; }
+          else { interim += e.results[i][0].transcript; }
+        }
+        if (final) setRawInput(prev => (prev + " " + final).trim());
+        setLiveText(interim);
+      };
+      r.onerror = (ev) => {
+        if (ev.error === "no-speech" || ev.error === "aborted") return;
+        recognitionRef.current = null;
+        setIsRecording(false); clearInterval(timerRef.current); toast("Chyba mikrofonu.", "err");
+      };
+      r.onend = () => { setLiveText(""); if (recognitionRef.current) startSR(); };
+      r.start();
+      recognitionRef.current = r;
+    };
+    recognitionRef.current = {};
+    startSR();
   };
 
   const stopRecording = () => {
-    if (recognitionRef.current) { recognitionRef.current.onend=null; recognitionRef.current.stop(); recognitionRef.current=null; }
+    const r = recognitionRef.current;
+    recognitionRef.current = null;
+    if (r && r.stop) { try { r.onend=null; r.stop(); } catch(e) {} }
     clearInterval(timerRef.current); setIsRecording(false);
-    if (liveText.trim()) setRawInput(prev=>(prev+" "+liveText).trim());
     setLiveText("");
   };
 
