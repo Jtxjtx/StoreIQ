@@ -251,7 +251,15 @@ export default function App() {
     if (!SR) { toast("Hlasový vstup není podporován — napište zprávu.", "err"); return; }
     const r = new SR();
     r.continuous = true; r.interimResults = true; r.lang = "cs-CZ";
-    r.onresult = (e) => { const t = Array.from(e.results).map(x=>x[0].transcript).join(" "); setLiveText(t); };
+    r.onresult = (e) => {
+      let final = ""; let interim = "";
+      for (let i = 0; i < e.results.length; i++) {
+        if (e.results[i].isFinal) { final += e.results[i][0].transcript + " "; }
+        else { interim += e.results[i][0].transcript; }
+      }
+      if (final) setRawInput(prev => (prev + " " + final).trim());
+      setLiveText(interim);
+    };
     r.onerror = () => { setIsRecording(false); clearInterval(timerRef.current); toast("Chyba mikrofonu.", "err"); };
     r.start();
     recognitionRef.current = r;
