@@ -235,6 +235,7 @@ export default function App() {
   const [filterDate, setFilterDate]       = useState("");
   const [storeSearch, setStoreSearch]     = useState("");
   const [notif, setNotif]                 = useState(null);
+  const [activeTab, setActiveTab]         = useState("technical");
 
   const toast = (msg, type="ok") => { setNotif({msg,type}); setTimeout(()=>setNotif(null),3500); };
 
@@ -380,7 +381,7 @@ export default function App() {
             {reports.slice(0,5).map(r=>{
               const store = STORES.find(s=>s.id===r.storeId);
               return (
-                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setPrevScreen(screen); setScreen("report-detail"); }} style={{ background:"#111120", borderRadius:16, padding:"15px 16px", marginBottom:9, cursor:"pointer" }}>
+                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setPrevScreen(screen); setActiveTab(CATEGORIES.filter(c=>r.categories[c.id]?.trim())[0]?.id||"technical"); setScreen("report-detail"); }} style={{ background:"#111120", borderRadius:16, padding:"15px 16px", marginBottom:9, cursor:"pointer" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:15, fontWeight:600, color:"#fff", marginBottom:5 }}>{store?.name}</div>
@@ -586,7 +587,7 @@ export default function App() {
               <div style={{ fontSize:11, color:"#444", letterSpacing:2, fontWeight:700, textTransform:"uppercase", marginBottom:12 }}>Historie návštěv</div>
               {sr.length===0 && <div style={{ color:"#333", fontSize:14, textAlign:"center", padding:"24px 0" }}>Zatím žádné zprávy</div>}
               {sr.map(r=>(
-                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setPrevScreen(screen); setScreen("report-detail"); }}
+                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setPrevScreen(screen); setActiveTab(CATEGORIES.filter(c=>r.categories[c.id]?.trim())[0]?.id||"technical"); setScreen("report-detail"); }}
                   style={{ background:"#111120", borderRadius:14, padding:"14px 16px", marginBottom:8, cursor:"pointer" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <div>
@@ -651,7 +652,7 @@ export default function App() {
             {filtered.map(r=>{
               const store = STORES.find(s=>s.id===r.storeId);
               return (
-                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setPrevScreen(screen); setScreen("report-detail"); }}
+                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setPrevScreen(screen); setActiveTab(CATEGORIES.filter(c=>r.categories[c.id]?.trim())[0]?.id||"technical"); setScreen("report-detail"); }}
                   style={{ background:"#111120", borderRadius:16, padding:"15px 16px", marginBottom:10, cursor:"pointer" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
                     <div>
@@ -676,7 +677,6 @@ export default function App() {
       {screen==="report-detail" && reportView && (()=>{
         const store = STORES.find(s=>s.id===reportView.storeId);
         const activeCats = CATEGORIES.filter(c=>reportView.categories[c.id]?.trim());
-        const [activeTab, setActiveTab] = useState(activeCats[0]?.id||"notes");
         return (
           <div style={{ paddingBottom:40 }}>
             <div style={{ padding:"52px 22px 18px", background:"#0d0d1a" }}>
@@ -723,4 +723,3 @@ export default function App() {
     </div>
   );
 }
-
