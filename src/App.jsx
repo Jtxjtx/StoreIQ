@@ -277,7 +277,7 @@ export default function App() {
         const found = STORES.find(s => s.name.toLowerCase() === result.detectedStore.toLowerCase());
         if (found) { setConfirmedStore(found); } else { setNeedStoreConfirm(true); }
       } else { setNeedStoreConfirm(true); }
-    } catch { setAiError("AI nemohla zprávu zpracovat. Zkontrolujte připojení a zkuste znovu."); }
+   } catch (e) { setAiError("Chyba: " + (e.message || JSON.stringify(e))); }
     finally { setAiLoading(false); }
   };
 
