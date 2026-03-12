@@ -7,6 +7,8 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
+    const { model, max_tokens, system, messages } = req.body;
+    
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -16,14 +18,14 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-3-5-sonnet-20241022",
-        max_tokens: 1200,
-        system: req.body.system,
-        messages: req.body.messages,
+        max_tokens: max_tokens || 1200,
+        system: system,
+        messages: messages,
       }),
     });
 
     const data = await response.json();
-    console.log("Anthropic response:", JSON.stringify(data));
+    console.log("Status:", response.status, "Data:", JSON.stringify(data).substring(0, 200));
     return res.status(response.status).json(data);
   } catch (error) {
     console.error("Error:", error.message);
