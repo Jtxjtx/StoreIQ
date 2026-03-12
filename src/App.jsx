@@ -187,7 +187,7 @@ Pravidla:
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-5-20251001",
+      model: "claude-3-5-sonnet-20241022",
       max_tokens: 1200,
       system: systemPrompt,
       messages: [{ role: "user", content: rawText }],
@@ -217,6 +217,7 @@ export default function App() {
   const [docs]                            = useState(SAMPLE_DOCS);
   const [selectedStore, setSelectedStore] = useState(null);
   const [reportView, setReportView]       = useState(null);
+  const [prevScreen, setPrevScreen]       = useState("home");
   const [rawInput, setRawInput]           = useState("");
   const [aiResult, setAiResult]           = useState(null);
   const [confirmedStore, setConfirmedStore] = useState(null);
@@ -277,7 +278,7 @@ export default function App() {
         const found = STORES.find(s => s.name.toLowerCase() === result.detectedStore.toLowerCase());
         if (found) { setConfirmedStore(found); } else { setNeedStoreConfirm(true); }
       } else { setNeedStoreConfirm(true); }
-   } catch (e) { setAiError("Chyba: " + (e.message || JSON.stringify(e))); }
+    } catch { setAiError("AI nemohla zprávu zpracovat. Zkontrolujte připojení a zkuste znovu."); }
     finally { setAiLoading(false); }
   };
 
@@ -379,7 +380,7 @@ export default function App() {
             {reports.slice(0,5).map(r=>{
               const store = STORES.find(s=>s.id===r.storeId);
               return (
-                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setScreen("report-detail"); }} style={{ background:"#111120", borderRadius:16, padding:"15px 16px", marginBottom:9, cursor:"pointer" }}>
+                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setPrevScreen(screen); setScreen("report-detail"); }} style={{ background:"#111120", borderRadius:16, padding:"15px 16px", marginBottom:9, cursor:"pointer" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:15, fontWeight:600, color:"#fff", marginBottom:5 }}>{store?.name}</div>
@@ -585,7 +586,7 @@ export default function App() {
               <div style={{ fontSize:11, color:"#444", letterSpacing:2, fontWeight:700, textTransform:"uppercase", marginBottom:12 }}>Historie návštěv</div>
               {sr.length===0 && <div style={{ color:"#333", fontSize:14, textAlign:"center", padding:"24px 0" }}>Zatím žádné zprávy</div>}
               {sr.map(r=>(
-                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setScreen("report-detail"); }}
+                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setPrevScreen(screen); setScreen("report-detail"); }}
                   style={{ background:"#111120", borderRadius:14, padding:"14px 16px", marginBottom:8, cursor:"pointer" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                     <div>
@@ -650,7 +651,7 @@ export default function App() {
             {filtered.map(r=>{
               const store = STORES.find(s=>s.id===r.storeId);
               return (
-                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setScreen("report-detail"); }}
+                <div key={r.id} className="card fade" onClick={()=>{ setReportView(r); setPrevScreen(screen); setScreen("report-detail"); }}
                   style={{ background:"#111120", borderRadius:16, padding:"15px 16px", marginBottom:10, cursor:"pointer" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
                     <div>
@@ -679,7 +680,7 @@ export default function App() {
         return (
           <div style={{ paddingBottom:40 }}>
             <div style={{ padding:"52px 22px 18px", background:"#0d0d1a" }}>
-              <button onClick={()=>setScreen("reports")} style={{ background:"none", color:"#6366F1", fontSize:14, marginBottom:16, border:"none" }}>‹ Zprávy</button>
+              <button onClick={()=>setScreen(prevScreen)} style={{ background:"none", color:"#6366F1", fontSize:14, marginBottom:16, border:"none" }}>‹ Zpět</button>
               <div style={{ fontSize:22, fontWeight:700, color:"#fff" }}>{store?.name}</div>
               <div style={{ fontSize:12, color:"#555", fontFamily:"'DM Mono',monospace", marginTop:4 }}>{fmtDate(reportView.date)} · {reportView.rep}</div>
               {reportView.raw && <div style={{ marginTop:12, fontSize:12, color:"#444", fontStyle:"italic", lineHeight:1.6, background:"#111120", borderRadius:10, padding:"10px 12px" }}><span style={{ color:"#333", fontStyle:"normal" }}>Originál: </span>{reportView.raw}</div>}
@@ -722,3 +723,4 @@ export default function App() {
     </div>
   );
 }
+
